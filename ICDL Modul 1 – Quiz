@@ -1,1 +1,630 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ECDL / ICDL Modul 1 – Quiz</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --success: #16a34a;
+      --error: #dc2626;
+      --warning: #d97706;
+      --border: #e5e7eb;
+      --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      --radius: 16px;
+    }
 
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 220px);
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    button, select, input { font: inherit; }
+
+    .quiz-container {
+      width: min(960px, calc(100% - 28px));
+      margin: 32px auto 64px;
+    }
+
+    .hero {
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,.75);
+      box-shadow: var(--shadow);
+      border-radius: 24px;
+      padding: 28px;
+      margin-bottom: 22px;
+    }
+
+    .header-area {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    h1 { margin: 0; font-size: clamp(1.6rem, 4vw, 2.35rem); line-height: 1.15; }
+    .subtitle { margin-top: 8px; color: var(--muted); }
+
+    .timer-display {
+      display: none;
+      font-weight: 800;
+      color: var(--error);
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      padding: 9px 13px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .progress-wrap { margin-top: 24px; }
+    .progress-row { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: .92rem; margin-bottom: 8px; }
+    .progress-track { height: 10px; background: #e8edf6; border-radius: 999px; overflow: hidden; }
+    .progress-bar { height: 100%; width: 0; background: var(--primary); transition: width .25s ease; }
+
+    .settings-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .setting-group, .switch-container {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .setting-group { justify-content: space-between; }
+    .switch-container { cursor: pointer; }
+    .switch-container input { width: 18px; height: 18px; accent-color: var(--primary); }
+
+    select {
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      padding: 8px 10px;
+      border-radius: 10px;
+      color: var(--text);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 18px 0 22px;
+    }
+
+    .btn {
+      border: none;
+      padding: 11px 16px;
+      border-radius: 12px;
+      font-weight: 750;
+      cursor: pointer;
+      transition: transform .15s ease, background .15s ease, opacity .15s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: #e8edf6; color: var(--text); }
+
+    .question-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 6px 18px rgba(15, 23, 42, .05);
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+
+    .question-top { display: flex; justify-content: space-between; gap: 14px; align-items: center; margin-bottom: 10px; }
+    .topic-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-size: .72rem;
+      font-weight: 800;
+    }
+    .question-number { color: var(--muted); font-size: .9rem; }
+    .question-text { font-size: 1.08rem; font-weight: 800; margin: 8px 0 14px; }
+
+    .options-list { display: grid; gap: 10px; }
+    .option-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      cursor: pointer;
+      background: #fff;
+      transition: border-color .15s ease, background .15s ease, transform .15s ease;
+    }
+    .option-item:hover { border-color: #93c5fd; background: #f8fbff; transform: translateY(-1px); }
+    .option-item input { margin-top: 3px; accent-color: var(--primary); }
+    .option-item.selected-pre { border-color: var(--primary); background: #eff6ff; }
+    .option-item.correct { border-color: #86efac; background: #f0fdf4; color: #166534; }
+    .option-item.incorrect { border-color: #fecaca; background: #fef2f2; color: #991b1b; }
+
+    .hint-btn {
+      margin-top: 12px;
+      border: none;
+      background: transparent;
+      color: var(--primary);
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+    }
+    .hint-text, .feedback {
+      display: none;
+      margin-top: 10px;
+      border-left: 4px solid #bfdbfe;
+      background: #f8fbff;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #475569;
+    }
+    .hint-text.show, .feedback.show { display: block; }
+    .feedback.correct-feedback { border-left-color: #86efac; background: #f0fdf4; }
+    .feedback.incorrect-feedback { border-left-color: #fecaca; background: #fef2f2; }
+
+    #result-box {
+      display: none;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-top: 22px;
+    }
+    #result-box.show { display: block; }
+    .result-score { font-size: 2rem; font-weight: 900; margin-bottom: 6px; }
+    .result-meta { color: var(--muted); }
+
+    @media (max-width: 640px) {
+      .quiz-container { width: min(100% - 18px, 960px); margin-top: 10px; }
+      .hero, .question-card, #result-box { padding: 17px; border-radius: 14px; }
+      .controls { position: sticky; bottom: 8px; z-index: 5; padding: 10px; background: rgba(245,247,251,.92); backdrop-filter: blur(8px); border-radius: 14px; }
+      .controls .btn { flex: 1 1 160px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="quiz-container">
+    <section class="hero">
+      <div class="header-area">
+        <div>
+          <h1 id="ui-title">ECDL / ICDL Modul 1 Grundlagen</h1>
+          <div id="ui-subtitle" class="subtitle">Interaktives Übungs-Quiz</div>
+        </div>
+        <div id="timer-box" class="timer-display">⏱️ 45:00</div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-row">
+          <span id="ui-progress-label">Fortschritt</span>
+          <span id="progress-text">0 / 10 beantwortet</span>
+        </div>
+        <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
+      </div>
+
+      <div class="settings-panel">
+        <div class="setting-group">
+          <label for="lang-select">🌐 Sprache</label>
+          <select id="lang-select" onchange="changeLanguage(this.value)">
+            <option value="de">Deutsch</option>
+            <option value="en">English</option>
+            <option value="uk">Українська</option>
+          </select>
+        </div>
+
+        <label class="switch-container">
+          <input type="checkbox" id="mode-checkbox" checked onchange="toggleExamMode()" />
+          <span id="ui-mode-text">🎓 Übungsmodus</span>
+        </label>
+      </div>
+    </section>
+
+    <div class="controls">
+      <button id="ui-btn-shuffle" class="btn btn-secondary" onclick="shuffleAndReset()">🔄 Neu mischen</button>
+      <button id="calc-score-btn" class="btn btn-primary" onclick="calculateScore(false)">📋 Quiz auswerten</button>
+    </div>
+
+    <section id="quiz-questions" aria-live="polite"></section>
+    <section id="result-box" aria-live="polite"></section>
+  </main>
+
+  <script>
+    const translations = {
+      de: {
+        title: 'ECDL / ICDL Modul 1 Grundlagen',
+        subtitle: 'Interaktives Übungs-Quiz',
+        progress: 'Fortschritt', answered: 'beantwortet',
+        practice: '🎓 Übungsmodus', exam: '⏱️ Prüfungsmodus',
+        shuffle: '🔄 Neu mischen', evaluate: '📋 Quiz auswerten',
+        hint: '💡 Hinweis anzeigen', correct: 'Richtig!', wrong: 'Nicht ganz.',
+        unanswered: 'Bitte beantworte zuerst alle Fragen.',
+        result: 'Ergebnis', of: 'von', points: 'Punkten',
+        excellent: 'Sehr stark!', good: 'Gut gemacht.', improve: 'Da geht noch mehr – probiere es noch einmal.'
+      },
+      en: {
+        title: 'ECDL / ICDL Module 1 Basics',
+        subtitle: 'Interactive practice quiz',
+        progress: 'Progress', answered: 'answered',
+        practice: '🎓 Practice mode', exam: '⏱️ Exam mode',
+        shuffle: '🔄 Shuffle again', evaluate: '📋 Evaluate quiz',
+        hint: '💡 Show hint', correct: 'Correct!', wrong: 'Not quite.',
+        unanswered: 'Please answer all questions first.',
+        result: 'Result', of: 'of', points: 'points',
+        excellent: 'Excellent!', good: 'Good job.', improve: 'Keep practicing and try again.'
+      },
+      uk: {
+        title: 'ECDL / ICDL Модуль 1 Основи',
+        subtitle: 'Інтерактивний тренувальний тест',
+        progress: 'Прогрес', answered: 'відповіли',
+        practice: '🎓 Режим навчання', exam: '⏱️ Режим іспиту',
+        shuffle: '🔄 Перемішати', evaluate: '📋 Перевірити тест',
+        hint: '💡 Показати підказку', correct: 'Правильно!', wrong: 'Не зовсім.',
+        unanswered: 'Спочатку дайте відповідь на всі запитання.',
+        result: 'Результат', of: 'з', points: 'балів',
+        excellent: 'Відмінно!', good: 'Добре!', improve: 'Спробуйте ще раз для кращого результату.'
+      }
+    };
+
+    const originalQuizData = [
+      {
+        topic: 'Hardware',
+        q: {de:'Welche Komponente führt die meisten Berechnungen eines Computers aus?', en:'Which component performs most computer calculations?', uk:'Який компонент виконує більшість обчислень комп’ютера?'},
+        options: [
+          {de:'CPU / Prozessor', en:'CPU / Processor', uk:'CPU / Процесор'},
+          {de:'Monitor', en:'Monitor', uk:'Монітор'},
+          {de:'Tastatur', en:'Keyboard', uk:'Клавіатура'},
+          {de:'Drucker', en:'Printer', uk:'Принтер'}
+        ], correct: 0,
+        hint: {de:'Sie wird oft als „Gehirn“ des Computers bezeichnet.', en:'It is often called the brain of the computer.', uk:'Його часто називають «мозком» комп’ютера.'}
+      },
+      {
+        topic: 'Speicher',
+        q: {de:'Welche Speicherart ist flüchtig und verliert Daten beim Ausschalten?', en:'Which type of memory is volatile and loses data when power is off?', uk:'Який тип пам’яті є енергозалежним і втрачає дані після вимкнення?'},
+        options: [
+          {de:'RAM', en:'RAM', uk:'RAM'},
+          {de:'SSD', en:'SSD', uk:'SSD'},
+          {de:'USB-Stick', en:'USB drive', uk:'USB-накопичувач'},
+          {de:'DVD', en:'DVD', uk:'DVD'}
+        ], correct: 0,
+        hint: {de:'Arbeitsspeicher wird nur während des Betriebs benötigt.', en:'Working memory is used while the computer is running.', uk:'Оперативна пам’ять використовується під час роботи комп’ютера.'}
+      },
+      {
+        topic: 'Software',
+        q: {de:'Welche Software verwaltet Hardware und Programme eines Computers?', en:'Which software manages a computer’s hardware and applications?', uk:'Яке програмне забезпечення керує апаратним забезпеченням і програмами комп’ютера?'},
+        options: [
+          {de:'Betriebssystem', en:'Operating system', uk:'Операційна система'},
+          {de:'Textverarbeitung', en:'Word processor', uk:'Текстовий редактор'},
+          {de:'Webseite', en:'Website', uk:'Вебсайт'},
+          {de:'Tabellenkalkulation', en:'Spreadsheet', uk:'Електронна таблиця'}
+        ], correct: 0,
+        hint: {de:'Windows, macOS und Linux sind Beispiele.', en:'Windows, macOS and Linux are examples.', uk:'Windows, macOS і Linux — приклади.'}
+      },
+      {
+        topic: 'Netzwerk',
+        q: {de:'Wofür steht die Abkürzung WLAN?', en:'What does WLAN refer to?', uk:'Що означає WLAN?'},
+        options: [
+          {de:'Drahtloses lokales Netzwerk', en:'Wireless local area network', uk:'Бездротова локальна мережа'},
+          {de:'Ein Betriebssystem', en:'An operating system', uk:'Операційна система'},
+          {de:'Eine Dateiendung', en:'A file extension', uk:'Розширення файлу'},
+          {de:'Ein Druckeranschluss', en:'A printer port', uk:'Порт принтера'}
+        ], correct: 0,
+        hint: {de:'Es ist ein lokales Netzwerk ohne Kabel.', en:'It is a local network without cables.', uk:'Це локальна мережа без кабелів.'}
+      },
+      {
+        topic: 'Internet',
+        q: {de:'Welche Anwendung nutzt man typischerweise zum Aufrufen von Webseiten?', en:'Which application is typically used to open websites?', uk:'Яку програму зазвичай використовують для відкриття вебсайтів?'},
+        options: [
+          {de:'Webbrowser', en:'Web browser', uk:'Веббраузер'},
+          {de:'Taschenrechner', en:'Calculator', uk:'Калькулятор'},
+          {de:'Dateimanager', en:'File manager', uk:'Файловий менеджер'},
+          {de:'Bildschirmtastatur', en:'On-screen keyboard', uk:'Екранна клавіатура'}
+        ], correct: 0,
+        hint: {de:'Chrome, Firefox, Edge und Safari gehören dazu.', en:'Chrome, Firefox, Edge and Safari are examples.', uk:'Chrome, Firefox, Edge і Safari — приклади.'}
+      },
+      {
+        topic: 'Sicherheit',
+        q: {de:'Welches Passwort ist am sichersten?', en:'Which password is the most secure?', uk:'Який пароль є найбезпечнішим?'},
+        options: [
+          {de:'12345678', en:'12345678', uk:'12345678'},
+          {de:'password', en:'password', uk:'password'},
+          {de:'M7!qP2#zL9', en:'M7!qP2#zL9', uk:'M7!qP2#zL9'},
+          {de:'max2020', en:'max2020', uk:'max2020'}
+        ], correct: 2,
+        hint: {de:'Länge und eine Mischung verschiedener Zeichen erhöhen die Sicherheit.', en:'Length and a mix of character types improve security.', uk:'Довжина та поєднання різних типів символів підвищують безпеку.'}
+      },
+      {
+        topic: 'Dateien',
+        q: {de:'Welche Dateiendung gehört typischerweise zu einer PDF-Datei?', en:'Which file extension is typically used for a PDF document?', uk:'Яке розширення зазвичай має PDF-документ?'},
+        options: [
+          {de:'.pdf', en:'.pdf', uk:'.pdf'},
+          {de:'.mp3', en:'.mp3', uk:'.mp3'},
+          {de:'.jpg', en:'.jpg', uk:'.jpg'},
+          {de:'.exe', en:'.exe', uk:'.exe'}
+        ], correct: 0,
+        hint: {de:'Die Dateiendung entspricht dem Formatnamen.', en:'The extension matches the format name.', uk:'Розширення збігається з назвою формату.'}
+      },
+      {
+        topic: 'Cloud',
+        q: {de:'Was bedeutet Cloud-Speicher?', en:'What is cloud storage?', uk:'Що таке хмарне сховище?'},
+        options: [
+          {de:'Speicherplatz auf entfernten Servern über das Internet', en:'Storage on remote servers accessed via the internet', uk:'Сховище на віддалених серверах через інтернет'},
+          {de:'Nur Speicher auf einer lokalen Festplatte', en:'Only storage on a local hard drive', uk:'Лише сховище на локальному диску'},
+          {de:'Ein spezieller Monitor', en:'A special monitor', uk:'Спеціальний монітор'},
+          {de:'Ein Druckverfahren', en:'A printing method', uk:'Спосіб друку'}
+        ], correct: 0,
+        hint: {de:'Beispiele sind OneDrive, Google Drive und iCloud.', en:'Examples include OneDrive, Google Drive and iCloud.', uk:'Приклади: OneDrive, Google Drive та iCloud.'}
+      },
+      {
+        topic: 'Ergonomie',
+        q: {de:'Welche Maßnahme ist bei längerer Computerarbeit sinnvoll?', en:'Which measure is sensible during long periods of computer work?', uk:'Що корисно робити під час тривалої роботи за комп’ютером?'},
+        options: [
+          {de:'Regelmäßige Pausen machen', en:'Take regular breaks', uk:'Регулярно робити перерви'},
+          {de:'Den Bildschirm maximal hell stellen', en:'Set the screen to maximum brightness', uk:'Встановити максимальну яскравість'},
+          {de:'Immer in derselben Haltung sitzen', en:'Always sit in the same position', uk:'Завжди сидіти в одній позі'},
+          {de:'Den Monitor sehr nah ans Gesicht stellen', en:'Place the monitor very close to your face', uk:'Поставити монітор дуже близько до обличчя'}
+        ], correct: 0,
+        hint: {de:'Abwechslung und kurze Unterbrechungen entlasten Augen und Körper.', en:'Changing posture and taking short breaks reduces strain.', uk:'Зміна пози та короткі перерви зменшують навантаження.'}
+      },
+      {
+        topic: 'Umwelt',
+        q: {de:'Welche Maßnahme spart typischerweise Energie?', en:'Which action typically saves energy?', uk:'Яка дія зазвичай економить енергію?'},
+        options: [
+          {de:'Geräte bei Nichtbenutzung ausschalten', en:'Turn devices off when not in use', uk:'Вимикати пристрої, коли вони не використовуються'},
+          {de:'Bildschirm dauerhaft eingeschaltet lassen', en:'Leave the screen on permanently', uk:'Залишати екран завжди увімкненим'},
+          {de:'Jede Datei ausdrucken', en:'Print every file', uk:'Друкувати кожен файл'},
+          {de:'Mehrere Ladegeräte ständig eingesteckt lassen', en:'Keep several chargers plugged in all the time', uk:'Постійно тримати кілька зарядних пристроїв у розетці'}
+        ], correct: 0,
+        hint: {de:'Nicht benötigte Geräte verbrauchen sonst oft weiterhin Strom.', en:'Unused devices can still consume electricity.', uk:'Невикористовувані пристрої можуть продовжувати споживати електроенергію.'}
+      }
+    ];
+
+    let quizData = [];
+    let currentLang = 'de';
+    let isPracticeMode = true;
+    let timerInterval = null;
+    let timeLeft = 45 * 60;
+    let quizEvaluated = false;
+    const answers = new Map();
+
+    document.addEventListener('DOMContentLoaded', () => {
+      shuffleAndReset();
+      changeLanguage(currentLang);
+    });
+
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function shuffleQuestion(q) {
+      const indexed = q.options.map((option, index) => ({ option, index }));
+      const mixed = shuffle(indexed);
+      return {
+        ...q,
+        options: mixed.map(x => x.option),
+        correct: mixed.findIndex(x => x.index === q.correct)
+      };
+    }
+
+    function initializeQuiz() {
+      const container = document.getElementById('quiz-questions');
+      container.innerHTML = '';
+
+      quizData.forEach((item, qIndex) => {
+        const card = document.createElement('article');
+        card.className = 'question-card';
+        card.dataset.index = qIndex;
+
+        const optionsHtml = item.options.map((option, oIndex) => `
+          <label class="option-item" data-option="${oIndex}">
+            <input type="radio" name="question-${qIndex}" value="${oIndex}" ${answers.get(qIndex) === oIndex ? 'checked' : ''} onchange="selectAnswer(${qIndex}, ${oIndex})">
+            <span>${escapeHtml(option[currentLang])}</span>
+          </label>
+        `).join('');
+
+        card.innerHTML = `
+          <div class="question-top">
+            <span class="topic-badge">${escapeHtml(item.topic)}</span>
+            <span class="question-number">${qIndex + 1} / ${quizData.length}</span>
+          </div>
+          <div class="question-text">${escapeHtml(item.q[currentLang])}</div>
+          <div class="options-list">${optionsHtml}</div>
+          ${isPracticeMode ? `<button class="hint-btn" type="button" onclick="toggleHint(${qIndex})">${translations[currentLang].hint}</button><div id="hint-${qIndex}" class="hint-text">${escapeHtml(item.hint[currentLang])}</div>` : ''}
+          <div id="feedback-${qIndex}" class="feedback"></div>
+        `;
+
+        container.appendChild(card);
+        updateSelectedStyle(qIndex);
+      });
+      updateProgress();
+    }
+
+    function selectAnswer(qIndex, optionIndex) {
+      if (quizEvaluated) return;
+      answers.set(qIndex, optionIndex);
+      updateSelectedStyle(qIndex);
+      updateProgress();
+
+      if (isPracticeMode) {
+        showFeedback(qIndex, optionIndex);
+      }
+    }
+
+    function updateSelectedStyle(qIndex) {
+      const card = document.querySelector(`.question-card[data-index="${qIndex}"]`);
+      if (!card) return;
+      card.querySelectorAll('.option-item').forEach(el => {
+        el.classList.toggle('selected-pre', Number(el.dataset.option) === answers.get(qIndex) && !quizEvaluated);
+      });
+    }
+
+    function showFeedback(qIndex, optionIndex) {
+      const item = quizData[qIndex];
+      const feedback = document.getElementById(`feedback-${qIndex}`);
+      const isCorrect = optionIndex === item.correct;
+      feedback.textContent = isCorrect ? translations[currentLang].correct : translations[currentLang].wrong;
+      feedback.className = `feedback show ${isCorrect ? 'correct-feedback' : 'incorrect-feedback'}`;
+    }
+
+    function toggleHint(qIndex) {
+      const hint = document.getElementById(`hint-${qIndex}`);
+      if (hint) hint.classList.toggle('show');
+    }
+
+    function calculateScore(force = false) {
+      const t = translations[currentLang];
+      if (!force && answers.size < quizData.length) {
+        alert(t.unanswered);
+        return;
+      }
+
+      quizEvaluated = true;
+      stopTimer();
+      let score = 0;
+
+      quizData.forEach((item, qIndex) => {
+        const selected = answers.get(qIndex);
+        const card = document.querySelector(`.question-card[data-index="${qIndex}"]`);
+        const optionEls = card.querySelectorAll('.option-item');
+
+        optionEls.forEach((el, oIndex) => {
+          el.classList.remove('selected-pre');
+          if (oIndex === item.correct) el.classList.add('correct');
+          if (selected === oIndex && selected !== item.correct) el.classList.add('incorrect');
+        });
+
+        card.querySelectorAll('input').forEach(input => input.disabled = true);
+        if (selected === item.correct) score++;
+        if (!isPracticeMode) showFeedback(qIndex, selected);
+      });
+
+      const percent = Math.round((score / quizData.length) * 100);
+      let message = t.improve;
+      if (percent >= 85) message = t.excellent;
+      else if (percent >= 65) message = t.good;
+
+      const result = document.getElementById('result-box');
+      result.innerHTML = `
+        <div class="result-score">${t.result}: ${score} ${t.of} ${quizData.length}</div>
+        <div>${percent}% – ${message}</div>
+        <div class="result-meta">${score} ${t.of} ${quizData.length} ${t.points}</div>
+      `;
+      result.classList.add('show');
+      result.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function shuffleAndReset() {
+      stopTimer();
+      answers.clear();
+      quizEvaluated = false;
+      timeLeft = 45 * 60;
+      quizData = shuffle(originalQuizData).map(shuffleQuestion);
+      document.getElementById('result-box').classList.remove('show');
+      document.getElementById('result-box').innerHTML = '';
+      initializeQuiz();
+      updateTimerDisplay();
+      if (!isPracticeMode) startTimer();
+    }
+
+    function toggleExamMode() {
+      isPracticeMode = document.getElementById('mode-checkbox').checked;
+      quizEvaluated = false;
+      answers.clear();
+      timeLeft = 45 * 60;
+      document.getElementById('timer-box').style.display = isPracticeMode ? 'none' : 'block';
+      stopTimer();
+      if (!isPracticeMode) startTimer();
+      changeLanguage(currentLang);
+      initializeQuiz();
+    }
+
+    function changeLanguage(lang) {
+      currentLang = lang;
+      document.documentElement.lang = lang;
+      const t = translations[lang];
+      document.getElementById('ui-title').textContent = t.title;
+      document.getElementById('ui-subtitle').textContent = t.subtitle;
+      document.getElementById('ui-progress-label').textContent = t.progress;
+      document.getElementById('ui-mode-text').textContent = isPracticeMode ? t.practice : t.exam;
+      document.getElementById('ui-btn-shuffle').textContent = t.shuffle;
+      document.getElementById('calc-score-btn').textContent = t.evaluate;
+      document.getElementById('lang-select').value = lang;
+      document.getElementById('timer-box').style.display = isPracticeMode ? 'none' : 'block';
+      initializeQuiz();
+    }
+
+    function updateProgress() {
+      const total = quizData.length || 1;
+      const answered = answers.size;
+      const percent = Math.round((answered / total) * 100);
+      document.getElementById('progress-bar').style.width = `${percent}%`;
+      document.getElementById('progress-text').textContent = `${answered} / ${total} ${translations[currentLang].answered}`;
+    }
+
+    function startTimer() {
+      stopTimer();
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        if (timeLeft <= 0) {
+          stopTimer();
+          calculateScore(true);
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = null;
+    }
+
+    function updateTimerDisplay() {
+      const minutes = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+      const seconds = String(timeLeft % 60).padStart(2, '0');
+      document.getElementById('timer-box').textContent = `⏱️ ${minutes}:${seconds}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+  </script>
+</body>
+</html>
